@@ -9,7 +9,7 @@ const getUsers = (req, res) =>
     })
     .catch(() => {
       res
-        .status(ERROR_CODE)
+        .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
         .send({ message: 'An error has occurred on the server' });
     });
 
