@@ -1,5 +1,6 @@
 const path = require('path');
 const readFile = require('../utils/getFile');
+const { ERROR_CODE } = require('../utils/constants');
 
 const getUsers = (req, res) =>
   readFile(path.join(__dirname, '../data/usersData.json'))
@@ -7,7 +8,9 @@ const getUsers = (req, res) =>
       res.status(200).send(JSON.parse(users));
     })
     .catch(() => {
-      res.status(500).send({ message: 'An error has occurred on the server' });
+      res
+        .status(ERROR_CODE)
+        .send({ message: 'An error has occurred on the server' });
     });
 
 const getUserById = (req, res) =>
@@ -17,13 +20,15 @@ const getUserById = (req, res) =>
       const usersDataParse = JSON.parse(users);
       const user = usersDataParse.find(({ _id: userId }) => userId === id);
       if (!user) {
-        res.status(404).send({ message: 'User ID not found' });
+        res.status(ERROR_CODE.NOT_FOUND).send({ message: 'User ID not found' });
       } else {
         res.send({ data: user });
       }
     })
     .catch(() => {
-      res.status(500).send({ message: 'An error has occurred on the server' });
+      res
+        .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+        .send({ message: 'An error has occurred on the server' });
     });
 
 module.exports = { getUsers, getUserById };
