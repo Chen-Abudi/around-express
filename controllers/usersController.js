@@ -58,18 +58,20 @@ const getUserById = (req, res) => {
     });
 };
 
-// const createUser = (req, res) => {
-//   const { name, about, avatar } = req.body;
+const createUser = (req, res) => {
+  const { name, about, avatar } = req.body;
 
-//   User.create({name, about, avatar})
-//   .then((user) => res.status(201).send({ data: user }))
-//   .catch((err) => {
-//     if (err.name === 'ValidationError') {
-//       res.status(BAD_REQUEST).send({ message: err.message })
-//     } else {
-//       res.status(ERROR_CODE.INTERNAL_SERVER_ERROR).send({ 'An error has occurred on the server' });
-//     }
-//   })
-// }
+  User.create({ name, about, avatar })
+    .then((user) => res.status(201).send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: err.message });
+      } else {
+        res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .send({ message: 'An error has occurred on the server' });
+      }
+    });
+};
 
-module.exports = { getUsers, getUserById };
+module.exports = { getUsers, getUserById, createUser };

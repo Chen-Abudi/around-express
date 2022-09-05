@@ -13,6 +13,13 @@ mongoose.connect(MONGO_SERVER);
 
 app.use(helmet());
 
+app.use((req, res, next) => {
+  req.user = {
+    _id: '631644f41b1235f986a00c3c',
+  };
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
