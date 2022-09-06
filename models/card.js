@@ -5,14 +5,14 @@ const cardSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    minlength: 2,
-    maxlength: 30,
+    minlength: [2, 'Please lengthen this text to 2 characters or more'],
+    maxlength: [30, 'Please lengthen this text to 30 characters or less'],
   },
   link: {
     type: String,
-    required: [true, 'url is required'],
+    required: [true, 'Please enter a URL'],
     validate: {
-      validator: (url) => validateURL(url),
+      validator: (v) => validateURL(v),
       message: 'Please enter a valid URL for picture',
     },
   },
@@ -21,7 +21,12 @@ const cardSchema = new mongoose.Schema({
     ref: 'user',
     required: true,
   },
-  like: [
+  // likes: {
+  //   type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
+  //   required: true,
+  //   default: [],
+  // }
+  likes: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user',

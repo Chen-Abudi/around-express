@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
+const { ERROR_CODE, ERROR_MESSAGE } = require('./utils/constants');
 const router = require('./routes');
 
 const { MONGO_SERVER } = require('./utils/constants');
@@ -18,6 +19,19 @@ app.use((req, res, next) => {
     _id: '631644f41b1235f986a00c3c',
   };
   next();
+});
+
+app.use((error, req, res, next) => {
+  if (error.status !== ERROR_CODE.INTERNAL_SERVER_ERROR) {
+    res.status(error.status).send(error.message);
+    return;
+  }
+  res.status(error.status).send(error.message);
+  next();
+});
+
+app.use((req, res) => {
+  res.status(ERROR_CODE.NOT_FOUND).send({ message: ERROR_MESSAGE.NOT_FOUND });
 });
 
 app.use(bodyParser.json());
