@@ -16,6 +16,8 @@ This is the 12th project at Practicum by Yandex and works on Back End. In this p
 
 - Node.js
 - Express.js
+- MongoDB/mongoose
+- JSON
 - Git/GitHub
 - Postman: for testing requests.
 - Launching on a Local Port 3000.
@@ -25,19 +27,19 @@ This is the 12th project at Practicum by Yandex and works on Back End. In this p
 - Server requests
 - Handling errors
 - Routing files
-- fs module for reading files
+- Validation with Regular Expression
 
 ## Directories
 
 `/controllers` — Server requests and Data processing.
 
-`/data` — JSON files to temporarily emulate database integration.
+`/helpers` — Creating error and its handler.
+
+`/models` — Schemas for user and card data with validation.
 
 `/routes` — routing files.
 
 `/utils` — Getting the file data function.
-
-All other directories are optional and may be created by the developer if necessary.
 
 ## Running the Project
 

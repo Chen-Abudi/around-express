@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const { ERROR_CODE, ERROR_MESSAGE } = require('./utils/constants');
 const router = require('./routes');
 
+const { apiLimiter } = require('./utils/rateLimit');
 const { MONGO_SERVER } = require('./utils/constants');
 
 const app = express();
@@ -13,6 +14,7 @@ const { PORT = 3000 } = process.env;
 mongoose.connect(MONGO_SERVER);
 
 app.use(helmet());
+app.use(apiLimiter);
 
 app.use((req, res, next) => {
   req.user = {
@@ -23,10 +25,12 @@ app.use((req, res, next) => {
 
 app.use((error, req, res, next) => {
   if (error.status !== ERROR_CODE.INTERNAL_SERVER_ERROR) {
-    res.status(error.status).send(error.message);
+    res.status(error.status).send({ message: error.message });
     return;
   }
-  res.status(error.status).send(error.message);
+  res
+    .status(error.status)
+    .send({ message: `${ERROR_MESSAGE.INTERNAL_SERVER_ERROR}` });
   next();
 });
 
