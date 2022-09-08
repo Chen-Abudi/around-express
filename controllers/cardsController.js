@@ -2,13 +2,14 @@ const Card = require('../models/card');
 const { createError } = require('../helpers/errors');
 const { ERROR_CODE, ERROR_MESSAGE } = require('../utils/constants');
 
+// GET
 const getCards = (req, res, next) => {
   Card.find({})
-    .populate('user')
     .then((cards) => res.send({ data: cards }))
     .catch(next);
 };
 
+// POST
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
 
@@ -24,6 +25,7 @@ const createCard = (req, res, next) => {
     .catch(next);
 };
 
+// DELETE
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
 
@@ -44,6 +46,7 @@ const deleteCard = (req, res, next) => {
     .catch(next);
 };
 
+// PUT
 const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
@@ -58,6 +61,7 @@ const likeCard = (req, res, next) => {
     .catch(next);
 };
 
+// DELETE
 const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,

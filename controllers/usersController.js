@@ -2,16 +2,18 @@ const User = require('../models/user');
 const { createError, errorHandler } = require('../helpers/errors');
 const { ERROR_CODE, ERROR_MESSAGE } = require('../utils/constants');
 
+// GET
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
     .catch(() => {
       res
         .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
-        .send({ message: 'An error has occurred on the server' });
+        .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
     });
 };
 
+// GET
 const getUserById = (req, res, next) => {
   User.findById(req.params._id)
     .orFail()
@@ -22,6 +24,7 @@ const getUserById = (req, res, next) => {
     .catch(next);
 };
 
+// POST
 const createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
 
@@ -37,6 +40,7 @@ const createUser = (req, res, next) => {
     .catch(next);
 };
 
+// PATCH
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
@@ -60,6 +64,7 @@ const updateUser = (req, res, next) => {
     .catch(next);
 };
 
+// PATCH
 const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
@@ -73,7 +78,7 @@ const updateUserAvatar = (req, res, next) => {
     }
   )
     .orFail()
-    .then((newAvatar) => res.send({ data: newAvatar }))
+    .then((user) => res.send({ data: user }))
     .catch((error) =>
       errorHandler(
         error,
