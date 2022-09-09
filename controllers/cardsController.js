@@ -1,78 +1,114 @@
 const Card = require('../models/card');
-const { createError } = require('../helpers/errors');
 const { ERROR_CODE, ERROR_MESSAGE } = require('../utils/constants');
 
 // GET
 const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
+    .catch(() => {
+      res
+        .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+        .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+    })
     .catch(next);
 };
 
 // POST
 const createCard = (req, res, next) => {
   const { name, link } = req.body;
+  const owner = req.user._id;
 
-  Card.create({ name, link, owner: req.user._id })
+  Card.create({ name, link, owner })
     .then((card) => res.status(201).send({ data: card }))
-    .catch((error) =>
-      createError(
-        error,
-        ERROR_MESSAGE.INCORRECT_CARD_DATA,
-        ERROR_CODE.INCORRECT_DATA
-      )
-    )
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res
+          .status(ERROR_CODE.INCORRECT_DATA)
+          .send(ERROR_MESSAGE.INCORRECT_CARD_DATA);
+      } else {
+        res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+      }
+    })
     .catch(next);
 };
 
 // DELETE
 const deleteCard = (req, res, next) => {
-  const { cardId } = req.params;
+  const { _id } = req.params;
 
-  Card.findByIdAndRemove(cardId)
-    .orFail(() =>
-      createError(
-        {
-          message: ERROR_MESSAGE.INCORRECT_CARD_DATA,
-        },
-        ERROR_MESSAGE.CARD_NOT_FOUND,
-        ERROR_CODE.NOT_FOUND
-      )
-    )
+  Card.findByIdAndRemove(_id)
+    .orFail()
     .then((card) => res.send({ data: card }))
-    .catch((err) =>
-      createError(err, ERROR_MESSAGE.CARD_NOT_FOUND, ERROR_CODE.NOT_FOUND)
-    )
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res
+          .status(ERROR_CODE.INCORRECT_DATA)
+          .send(ERROR_MESSAGE.INCORRECT_CARD_DATA);
+      }
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(ERROR_CODE.NOT_FOUND).send(ERROR_MESSAGE.CARD_NOT_FOUND);
+      } else {
+        res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+      }
+    })
     .catch(next);
 };
 
 // PUT
 const likeCard = (req, res, next) => {
+  const cardId = req.params._id;
+  const userId = req.user._id;
+
   Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    cardId,
+    { $addToSet: { likes: userId } },
     { new: true }
   )
     .orFail()
     .then((likes) => res.send({ data: likes }))
-    .catch((error) =>
-      createError(error, ERROR_MESSAGE.CARD_NOT_FOUND, ERROR_CODE.NOT_FOUND)
-    )
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res
+          .status(ERROR_CODE.INCORRECT_DATA)
+          .send(ERROR_MESSAGE.INCORRECT_CARD_DATA);
+      }
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(ERROR_CODE.NOT_FOUND).send(ERROR_MESSAGE.CARD_NOT_FOUND);
+      } else {
+        res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+      }
+    })
     .catch(next);
 };
 
 // DELETE
 const dislikeCard = (req, res, next) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } },
-    { new: true }
-  )
+  const cardId = req.params._id;
+  const userId = req.user._id;
+
+  Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
     .orFail()
     .then((likes) => res.send({ data: likes }))
-    .catch((error) =>
-      createError(error, ERROR_MESSAGE.CARD_NOT_FOUND, ERROR_CODE.NOT_FOUND)
-    )
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res
+          .status(ERROR_CODE.INCORRECT_DATA)
+          .send(ERROR_MESSAGE.INCORRECT_CARD_DATA);
+      }
+      if (err.name === 'DocumentNotFoundError') {
+        res.status(ERROR_CODE.NOT_FOUND).send(ERROR_MESSAGE.CARD_NOT_FOUND);
+      } else {
+        res
+          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
+          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+      }
+    })
     .catch(next);
 };
 
