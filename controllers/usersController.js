@@ -1,56 +1,90 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { secretKey } = require('../utils/key');
 const User = require('../models/user');
-const { ERROR_CODE, ERROR_MESSAGE } = require('../utils/constants');
+
+const ConflictError = require('../errors/ConflictError');
+const NotFoundError = require('../errors/NotFoundError');
+const UnauthorizeError = require('../errors/UnauthorizeError');
+const BadRequestError = require('../errors/BadRequestError');
+
+const { ERROR_MESSAGE } = require('../utils/constants');
+
+const userLogin = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, secretKey, {
+        expiresIn: '7d',
+      });
+
+      res.send({ data: user.toJSON(), token });
+    })
+    .catch(() => {
+      next(new UnauthorizeError('Incorrect email or password'));
+    });
+};
 
 // GET
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => {
-      res
-        .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
-        .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
-    });
+    .catch(next);
 };
 
 // GET
 const getUserById = (req, res, next) => {
   User.findById(req.params._id)
-    .orFail()
+    .orFail(new NotFoundError(ERROR_MESSAGE.USER_NOT_FOUND))
     .then((user) => res.send({ data: user }))
+
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(ERROR_CODE.NOT_FOUND).send(ERROR_MESSAGE.USER_NOT_FOUND);
-      } else if (err.name === 'CastError') {
-        res
-          .status(ERROR_CODE.INCORRECT_DATA)
-          .send(ERROR_MESSAGE.INCORRECT_USER_DATA);
+      if (err.name === 'CastError') {
+        next(new BadRequestError(ERROR_MESSAGE.INCORRECT_USER_DATA));
       } else {
-        res
-          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
-          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+        next(err);
       }
-    })
+    });
+};
+
+const getCurrentUser = (req, res, next) => {
+  const { _id: userId } = req.user;
+  User.findById(userId)
+    .orFail(new NotFoundError(ERROR_MESSAGE.USER_NOT_FOUND))
+    .then((user) => res.send({ data: user }))
     .catch(next);
+  // getUserById(req.user, res);
 };
 
 // POST
 const createUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
+  const { name, about, avatar, email, password } = req.body;
 
-  User.create({ name, about, avatar })
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        throw new ConflictError(ERROR_MESSAGE.CONFLICT);
+      }
+      return bcrypt.hash(password, 10);
+    })
+    .then((hash) =>
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      })
+    )
     .then((user) => res.status(201).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_CODE.INCORRECT_DATA)
-          .send(ERROR_MESSAGE.INCORRECT_CARD_DATA);
+        next(new BadRequestError('Invalid email or password'));
       } else {
-        res
-          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
-          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+        next(err);
       }
-    })
-    .catch(next);
+    });
 };
 
 // PATCH
@@ -65,26 +99,15 @@ const updateUser = (req, res, next) => {
       runValidators: true,
     }
   )
-    .orFail()
+    .orFail(new NotFoundError(ERROR_MESSAGE.USER_NOT_FOUND))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(ERROR_CODE.NOT_FOUND).send(ERROR_MESSAGE.USER_NOT_FOUND);
-      } else if (err.name === 'CastError') {
-        res
-          .status(ERROR_CODE.INCORRECT_DATA)
-          .send(ERROR_MESSAGE.INCORRECT_USER_DATA);
-      } else if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_CODE.INCORRECT_DATA)
-          .send(ERROR_MESSAGE.INCORRECT_USER_DATA);
+      if (err.name === 'CastError' || 'ValidationError') {
+        next(new BadRequestError(ERROR_MESSAGE.INCORRECT_USER_DATA));
       } else {
-        res
-          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
-          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+        next(err);
       }
-    })
-    .catch(next);
+    });
 };
 
 // PATCH
@@ -100,31 +123,22 @@ const updateUserAvatar = (req, res, next) => {
       upsert: false,
     }
   )
-    .orFail()
+    .orFail(new NotFoundError(ERROR_MESSAGE.USER_NOT_FOUND))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(ERROR_CODE.NOT_FOUND).send(ERROR_MESSAGE.USER_NOT_FOUND);
-      } else if (err.name === 'CastError') {
-        res
-          .status(ERROR_CODE.INCORRECT_DATA)
-          .send(ERROR_MESSAGE.INCORRECT_AVATAR_DATA);
-      } else if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_CODE.INCORRECT_DATA)
-          .send(ERROR_MESSAGE.INCORRECT_AVATAR_DATA);
+      if (err.name === 'CastError' || 'ValidationError') {
+        next(new BadRequestError(ERROR_MESSAGE.INCORRECT_USER_DATA));
       } else {
-        res
-          .status(ERROR_CODE.INTERNAL_SERVER_ERROR)
-          .send(ERROR_MESSAGE.INTERNAL_SERVER_ERROR);
+        next(err);
       }
-    })
-    .catch(next);
+    });
 };
 
 module.exports = {
+  userLogin,
   getUsers,
   getUserById,
+  getCurrentUser,
   createUser,
   updateUser,
   updateUserAvatar,

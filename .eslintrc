@@ -6,6 +6,9 @@
     "no-useless-escape": "off",
     "comma-dangle": "off",
     "operator-linebreak": "off",
-    "function-paren-newline": "off"
+    "function-paren-newline": "off",
+    "object-curly-newline": "off",
+    "newline-per-chained-call": "off",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "next" }]
   }
 }
