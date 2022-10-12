@@ -77,12 +77,14 @@ const validateUserAvatar = celebrate({
 
 const validateObjectId = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().required.custom((value, helpers) => {
-      if (ObjectId.isValid(value)) {
-        return value;
-      }
-      return helpers.message('Sorry, it is invalid id');
-    }),
+    cardId: Joi.string()
+      .required()
+      .custom((value, helpers) => {
+        if (ObjectId.isValid(value)) {
+          return value;
+        }
+        return helpers.message('Sorry, it is invalid id');
+      }),
   }),
 });
 
