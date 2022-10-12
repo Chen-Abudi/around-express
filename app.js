@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
 
@@ -26,19 +25,6 @@ app.use(apiLimiter);
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', allowedCors);
-  res.header(
-    'Access-Content-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  );
-  res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
-  next();
-});
-
-app.use(cors());
-app.options('*', cors());
 
 app.use(requestLogger);
 

@@ -1,9 +1,5 @@
 const MONGO_SERVER = 'mongodb://localhost:27017/aroundb';
 
-const allowedCors =
-  'https://api.samantha-horsch-around-us.students.nomoredomainssbs.ru';
-const DEFAULT_ALLOWED_METHODS = 'GET, HEAD, PUT, PATCH, POST, DELETE';
-
 const ERROR_CODE = {
   INCORRECT_DATA: 400,
   NOT_FOUND: 404,
@@ -29,8 +25,6 @@ const ERROR_MESSAGE = {
 
 module.exports = {
   MONGO_SERVER,
-  allowedCors,
-  DEFAULT_ALLOWED_METHODS,
   ERROR_CODE,
   ERROR_MESSAGE,
 };
