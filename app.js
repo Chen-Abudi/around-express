@@ -10,8 +10,6 @@ const errorHandler = require('./middleware/errorHandler');
 
 const { requestLogger, errorLogger } = require('./middleware/logger');
 
-const { allowedCors, DEFAULT_ALLOWED_METHODS } = require('./utils/constants');
-
 const { apiLimiter } = require('./utils/rateLimit');
 const { MONGO_SERVER } = require('./utils/constants');
 
