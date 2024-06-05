@@ -17,7 +17,18 @@ const { MONGO_SERVER } = require('./utils/constants');
 const app = express();
 const { PORT = 3000 } = process.env;
 
-mongoose.connect(MONGO_SERVER);
+// Set Mongoose strictQuery option
+mongoose.set('strictQuery', false); // Suppress the deprecation warning
+
+// mongoose.connect(MONGO_SERVER);
+
+mongoose
+  .connect(MONGO_SERVER, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Failed to connect to MongoDB', err));
 
 app.use(helmet());
 app.use(apiLimiter);
