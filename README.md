@@ -1,4 +1,4 @@
-# Project 12-13: Around the U.S. Back End
+# Project 12-13: Around the U.S. Backend
 
 ## Overview
 
