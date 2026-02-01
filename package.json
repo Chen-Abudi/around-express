@@ -45,7 +45,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "socks": "^2.7.0",
-    "validator": "^13.7.0",
+    "validator": "^13.15.22",
     "winston": "^3.8.2"
   },
   "devDependencies": {
